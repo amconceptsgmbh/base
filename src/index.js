@@ -1,14 +1,23 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import ReactTooltip from 'react-tooltip';
+import Router from './Router';
+import store from './store';
 import reportWebVitals from './reportWebVitals';
+import GlobalStyle from './globalStyle';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <Provider store={store}>
+      <Router />
+    </Provider>
+    <GlobalStyle />
+    {/* globally enable react tooltips */}
+    <ReactTooltip />
+    {/* will be null if GA tracking is not enabled */}
+  </React.StrictMode>,
+  document.getElementById('root'),
 );
 
 // If you want to start measuring performance in your app, pass a function

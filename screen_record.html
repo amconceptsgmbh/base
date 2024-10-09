@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screen Recording Example</title>
+</head>
+<body>
+    <h1>Screen Recorder</h1>
+    <button id="startBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop Recording</button>
+    <video id="recordedVideo" controls style="display:none;"></video>
+
+    <script>
+        //https://www.npmjs.com/package/react-media-recorder
+        document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const recordedVideo = document.getElementById('recordedVideo');
+
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function startRecording() {
+        try {
+            // Capture screen video and system audio
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: true // This captures the system audio
+            });
+
+            // Capture microphone audio
+            const micStream = await navigator.mediaDevices.getUserMedia({
+                audio: true // This captures microphone audio
+            });
+
+            // Combine screen stream with microphone audio stream
+            const combinedStream = new MediaStream([
+                ...screenStream.getVideoTracks(),
+                ...screenStream.getAudioTracks(),
+                ...micStream.getAudioTracks()
+            ]);
+
+            // Initialize MediaRecorder with the combined stream and supported MIME type
+            mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp8' });
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+
+                recordedVideo.src = url;
+                recordedVideo.style.display = 'block';
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'recording.webm';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // Reset chunks array after download
+                recordedChunks = [];
+            };
+
+            mediaRecorder.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+        } catch (err) {
+            console.error('Error: ' + err);
+        }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+
+    startBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
+});
+        /*document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const recordedVideo = document.getElementById('recordedVideo');
+
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: true
+            });
+
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp8' });
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+
+                recordedVideo.src = url;
+                recordedVideo.style.display = 'block';
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'recording.webm';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // Reset chunks array after download
+                recordedChunks = [];
+            };
+
+            mediaRecorder.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+        } catch (err) {
+            console.error('Error: ' + err);
+        }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+
+    startBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
+});*/
+
+
+    </script>
+</body>
+</html>
+
+
